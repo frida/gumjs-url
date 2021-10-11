@@ -1,5 +1,3 @@
-'use strict';
-
 module.exports = {
   isString: function (arg) {
     return typeof arg === 'string';

@@ -21,8 +21,6 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-'use strict';
-
 var punycode = require('punycode');
 var util = require('./util');
 
