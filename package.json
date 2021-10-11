@@ -1,13 +1,19 @@
 {
-  "name": "url",
-  "description": "The core `url` packaged standalone for use with Browserify.",
-  "version": "0.11.0",
+  "name": "@frida/url",
+  "description": "Node.js's url module for Frida",
+  "version": "1.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "defunctzombie",
   "dependencies": {
     "punycode": "^1.4.1",
     "querystring": "0.2.0"
   },
   "main": "./url.js",
+  "files": [
+    "/url.js"
+  ],
   "keywords": [
     "parsing",
     "url",
@@ -33,7 +39,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/defunctzombie/node-url.git"
+    "url": "https://github.com/frida/gumjs-url.git"
   },
   "license": "MIT"
 }
