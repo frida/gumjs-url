@@ -19,8 +19,8 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { toASCII } from 'punycode';
-import querystring from 'querystring';
+import { toASCII } from '@frida/punycode';
+import querystring from '@frida/querystring';
 
 function Url() {
   this.protocol = null;

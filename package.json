@@ -22,7 +22,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "punycode": "^2.1.1",
-    "querystring": "^0.2.1"
+    "@frida/punycode": "^3.0.0",
+    "@frida/querystring": "^1.0.0"
   }
 }
