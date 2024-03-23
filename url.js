@@ -20,7 +20,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { toASCII } from '@frida/punycode';
-import querystring from '@frida/querystring';
+import { stringify as stringifyQuery, querystring } from '@frida/querystring';
 
 function Url() {
   this.protocol = null;
@@ -960,7 +960,193 @@ function spliceOne(list, index) {
   list.pop();
 }
 
+// Class representing URL search parameters
+class URLSearchParams {
+  constructor(queryString) {
+    // If queryString is null or undefined, set it to an empty string
+    if (queryString === null || queryString === undefined) {
+      queryString = '';
+    }
+    // Parse the query string into key-value pairs
+    this.params = URLSearchParams.parse(queryString);
+  }
+
+  // Static method to parse the query string
+  static parse(queryString) {
+    // Use Map instead of URLSearchParams
+    const params = new Map();
+    if (queryString) {
+      // Split the query string into individual parameters and iterate over them
+      queryString
+        .replace(/\+/g, ' ') // Replace '+' with space
+        .split('&') // Split parameters using '&' as delimiter
+        .forEach((param) => {
+          // Split each parameter into key and value
+          const [key, value] = param.split('=');
+          // Decode the key and value
+          const decodedKey = decodeURIComponent(key);
+          const decodedValue = decodeURIComponent(value || '');
+          // Check if the parameter already exists in the params Map
+          if (!params.has(decodedKey)) {
+            // If not, append it
+            params.append(decodedKey, decodedValue);
+          } else {
+            // If yes, set its value
+            params.set(decodedKey, decodedValue);
+          }
+        });
+    }
+    return params;
+  }
+
+  // Method to check if a parameter exists
+  has(key) {
+    return this.params.has(key);
+  }
+
+  // Method to get the value of a parameter
+  get(key) {
+    return this.params.get(key);
+  }
+
+  // Method to set the value of a parameter
+  set(key, value) {
+    this.params.set(key, value);
+  }
+
+  // Method to append a new value to a parameter
+  append(key, value) {
+    this.params.append(key, value);
+  }
+
+  // Method to delete a parameter
+  delete(key) {
+    this.params.delete(key);
+  }
+
+  // Method to convert the parameters back to a query string
+  toString() {
+    let queryString = '';
+    // Iterate over the params Map and construct the query string
+    this.params.forEach((value, key) => {
+      if (queryString !== '') {
+        queryString += '&';
+      }
+      queryString += encodeURIComponent(key) + '=' + encodeURIComponent(value);
+    });
+    return queryString;
+  }
+}
+
+// Class representing a URL
+class URL {
+  constructor(urlString, base) {
+    // Throw error if urlString is not a string
+    if (typeof urlString !== 'string') {
+        throw new Error('Invalid URL string');
+    }
+    // Parse the URL string into its components
+    const urlObject = urlParse(urlString, true, true);
+    // Assign each component to instance variables
+    this._protocol = urlObject.protocol;
+    this._slashes = urlObject.slashes;
+    this._auth = urlObject.auth;
+    this._hostname = urlObject.hostname;
+    this._port = urlObject.port;
+    this._host = urlObject.host;
+    this._pathname = urlObject.pathname;
+    this._search = urlObject.search;
+    this._query = urlObject.query;
+    this._hash = urlObject.hash;
+    this._path = urlObject.path;
+    this._href = urlObject.href;
+    // Create URLSearchParams object from query object
+    this._searchParams = new URLSearchParams(stringifyQuery(this._query));
+    // If a base URL is provided, override the host component
+    if (base) {
+      this._host = base;
+    }
+  }
+
+  // Method to convert URL object back to a string
+  toString() {
+    return this._href;
+  }
+
+  // Getter for the base URL
+  get base() {
+    return this._host;
+  }
+
+  // Getters for various URL components
+  get protocol() {
+    return this._protocol;
+  }
+
+  // Getter for slashes
+  get slashes() {
+    return this._slashes;
+  }
+
+  // Getter for authentication information
+  get auth() {
+    return this._auth;
+  }
+
+  // Getter for hostname
+  get hostname() {
+    return this._hostname;
+  }
+
+  // Getter for port number
+  get port() {
+    return this._port;
+  }
+
+  // Getter for host
+  get host() {
+    return this._host;
+  }
+
+  // Getter for pathname
+  get pathname() {
+    return this._pathname;
+  }
+
+  // Getter for search query
+  get search() {
+    return this._search;
+  }
+
+  // Getter for query string parameters
+  get query() {
+    return this._query;
+  }
+
+  // Getter for hash
+  get hash() {
+    return this._hash;
+  }
+
+  // Getter for path
+  get path() {
+    return this._path;
+  }
+
+  // Getter for href
+  get href() {
+    return this._href;
+  }
+
+  // Getter for URL search parameters
+  get searchParams() {
+    return this._searchParams;
+  }
+}
+
 export default {
+  URLSearchParams,
+  URL,
   Url,
   parse: urlParse,
   resolve: urlResolve,
@@ -968,6 +1154,8 @@ export default {
   format: urlFormat,
 };
 export {
+  URLSearchParams,
+  URL,
   Url,
   urlParse as parse,
   urlResolve as resolve,
