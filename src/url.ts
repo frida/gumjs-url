@@ -1055,9 +1055,16 @@ class URL {
   public _searchParams: any;
 
   constructor(urlString: string, base?: string) {
-    // Throw error if urlString is not a string
+    // Ensure urlString is a valid URL string or URL object
     if (typeof urlString !== 'string') {
-      throw new Error('Invalid URL string');
+      // If urlString is an instance of URL class, convert it to string
+      if (urlString instanceof URL) {
+        urlString = urlString.toString();
+      }
+      // If urlString is neither a string nor a valid URL object, throw an error
+      else {
+        throw new Error('Invalid URL');
+      }
     }
     // Parse the URL string into its components
     const urlObject = urlParse(urlString, true, true);
