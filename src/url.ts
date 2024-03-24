@@ -1054,7 +1054,7 @@ class URL {
   public _href: any;
   public _searchParams: any;
 
-  constructor(urlString: string | URL, base?: string) {
+  constructor(urlString: string | { toString: () => string }, base?: string | URL | undefined) {
     // Ensure urlString is a valid URL string or URL object
     if (typeof urlString !== 'string') {
       // If urlString is an instance of URL class, convert it to string
@@ -1083,9 +1083,14 @@ class URL {
     this._href = urlObject.href;
     // Create URLSearchParams object from query object
     this._searchParams = new URLSearchParams(stringifyQuery(this._query));
-    // If a base URL is provided, override the host component
+    // If a base URL is provided, override the host component with the host of the base URL
     if (base) {
-      this._host = base;
+      if (base instanceof URL) {
+        this._host = base.host;
+      }
+      else {
+        this._host = base;
+      }
     }
   }
 

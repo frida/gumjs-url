@@ -970,9 +970,14 @@ class URL {
         this._href = urlObject.href;
         // Create URLSearchParams object from query object
         this._searchParams = new URLSearchParams(stringifyQuery(this._query));
-        // If a base URL is provided, override the host component
+        // If a base URL is provided, override the host component with the host of the base URL
         if (base) {
-            this._host = base;
+            if (base instanceof URL) {
+                this._host = base.host;
+            }
+            else {
+                this._host = base;
+            }
         }
     }
     // Method to convert URL object back to a string
