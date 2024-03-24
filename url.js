@@ -567,6 +567,7 @@ const noEscapeAuth = new Int8Array([
 Url.prototype.format = function format() {
   let auth = this.auth || '';
   if (auth) {
+    //TODO: function encodeStr and var hexTable Does not exist
     auth = encodeStr(auth, noEscapeAuth, hexTable);
     auth += '@';
   }
