@@ -20,7 +20,8 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { toASCII } from '@frida/punycode';
-import { stringify as stringifyQuery, querystring } from '@frida/querystring';
+//TODO import { querystring } from '@frida/querystring'; Does not exist
+import { stringify as stringifyQuery, parse as parseQuery } from '@frida/querystring';
 
 function Url() {
   this.protocol = null;
@@ -229,7 +230,7 @@ Url.prototype.parse = function parse(url, parseQueryString, slashesDenoteHost) {
       if (simplePath[2]) {
         this.search = simplePath[2];
         if (parseQueryString) {
-          this.query = querystring.parse(this.search.slice(1));
+          this.query = parseQuery(this.search.slice(1));
         } else {
           this.query = this.search.slice(1);
         }
@@ -430,7 +431,7 @@ Url.prototype.parse = function parse(url, parseQueryString, slashesDenoteHost) {
       this.query = rest.slice(questionIdx + 1, hashIdx);
     }
     if (parseQueryString) {
-      this.query = querystring.parse(this.query);
+      this.query = parseQuery(this.query);
     }
   } else if (parseQueryString) {
     // No query string, but parseQueryString still requested
@@ -590,7 +591,7 @@ Url.prototype.format = function format() {
   }
 
   if (this.query !== null && typeof this.query === 'object') {
-    query = querystring.stringify(this.query);
+    query = stringifyQuery(this.query);
   }
 
   let search = this.search || (query && ('?' + query)) || '';
