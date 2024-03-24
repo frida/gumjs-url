@@ -28,7 +28,7 @@ declare class URL {
     _path: any;
     _href: any;
     _searchParams: any;
-    constructor(urlString: string, base?: string);
+    constructor(urlString: string | URL, base?: string);
     toString(): any;
     get base(): any;
     get protocol(): any;

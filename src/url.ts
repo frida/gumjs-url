@@ -1054,7 +1054,7 @@ class URL {
   public _href: any;
   public _searchParams: any;
 
-  constructor(urlString: string, base?: string) {
+  constructor(urlString: string | URL, base?: string) {
     // Ensure urlString is a valid URL string or URL object
     if (typeof urlString !== 'string') {
       // If urlString is an instance of URL class, convert it to string
