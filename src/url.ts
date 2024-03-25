@@ -19,11 +19,25 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// @ts-ignore
 import { toASCII } from '@frida/punycode';
-//TODO import { querystring } from '@frida/querystring'; Does not exist
 import { stringify as stringifyQuery, parse as parseQuery } from '@frida/querystring';
 
-function Url() {
+function Url(
+  this: {
+    protocol: any;
+    slashes: any;
+    auth: any;
+    host: any;
+    port: any;
+    hostname: any;
+    hash: any;
+    search: any;
+    query: any;
+    pathname: any;
+    path: any;
+    href: any;
+  }) {
   this.protocol = null;
   this.slashes = null;
   this.auth = null;
@@ -114,15 +128,15 @@ const
   CHAR_VERTICAL_LINE = 124,
   CHAR_AT = 64;
 
-function urlParse(url, parseQueryString, slashesDenoteHost) {
+function urlParse(url: any, parseQueryString?: boolean, slashesDenoteHost?: boolean) {
   if (url instanceof Url) return url;
-
+  // @ts-ignore
   const urlObject = new Url();
   urlObject.parse(url, parseQueryString, slashesDenoteHost);
   return urlObject;
 }
 
-function isIpv6Hostname(hostname) {
+function isIpv6Hostname(hostname: string) {
   return (
     hostname.charCodeAt(0) === CHAR_LEFT_SQUARE_BRACKET &&
     hostname.charCodeAt(hostname.length - 1) === CHAR_RIGHT_SQUARE_BRACKET
@@ -143,7 +157,7 @@ function isIpv6Hostname(hostname) {
 // [1]: https://url.spec.whatwg.org/#forbidden-host-code-point
 const forbiddenHostChars = /[\t\n\r #%/:<>?@[\\\]^|]/;
 
-Url.prototype.parse = function parse(url, parseQueryString, slashesDenoteHost) {
+Url.prototype.parse = function parse(url: string, parseQueryString: boolean, slashesDenoteHost: boolean) {
   // Copy chrome, IE, opera backslash-handling behavior.
   // Back slashes before the query string get converted to forward slashes
   // See: https://code.google.com/p/chromium/issues/detail?id=25916
@@ -157,12 +171,12 @@ Url.prototype.parse = function parse(url, parseQueryString, slashesDenoteHost) {
 
     // Find first and last non-whitespace characters for trimming
     const isWs = code === CHAR_SPACE ||
-                 code === CHAR_TAB ||
-                 code === CHAR_CARRIAGE_RETURN ||
-                 code === CHAR_LINE_FEED ||
-                 code === CHAR_FORM_FEED ||
-                 code === CHAR_NO_BREAK_SPACE ||
-                 code === CHAR_ZERO_WIDTH_NOBREAK_SPACE;
+      code === CHAR_TAB ||
+      code === CHAR_CARRIAGE_RETURN ||
+      code === CHAR_LINE_FEED ||
+      code === CHAR_FORM_FEED ||
+      code === CHAR_NO_BREAK_SPACE ||
+      code === CHAR_ZERO_WIDTH_NOBREAK_SPACE;
     if (start === -1) {
       if (isWs)
         continue;
@@ -202,7 +216,6 @@ Url.prototype.parse = function parse(url, parseQueryString, slashesDenoteHost) {
   if (start !== -1) {
     if (lastPos === start) {
       // We didn't convert any backslashes
-
       if (end === -1) {
         if (start === 0)
           rest = url;
@@ -242,7 +255,7 @@ Url.prototype.parse = function parse(url, parseQueryString, slashesDenoteHost) {
     }
   }
 
-  let proto = protocolPattern.exec(rest);
+  let proto = protocolPattern.exec(rest)?.toString();
   let lowerProto;
   if (proto) {
     proto = proto[0];
@@ -258,15 +271,15 @@ Url.prototype.parse = function parse(url, parseQueryString, slashesDenoteHost) {
   let slashes;
   if (slashesDenoteHost || proto || hostPattern.test(rest)) {
     slashes = rest.charCodeAt(0) === CHAR_FORWARD_SLASH &&
-              rest.charCodeAt(1) === CHAR_FORWARD_SLASH;
-    if (slashes && !(proto && hostlessProtocol.has(lowerProto))) {
+      rest.charCodeAt(1) === CHAR_FORWARD_SLASH;
+    if (slashes && lowerProto && !(proto && hostlessProtocol.has(lowerProto))) {
       rest = rest.slice(2);
       this.slashes = true;
     }
   }
 
-  if (!hostlessProtocol.has(lowerProto) &&
-      (slashes || (proto && !slashedProtocol.has(proto)))) {
+  if (lowerProto && !hostlessProtocol.has(lowerProto) &&
+    (slashes || (proto && !slashedProtocol.has(proto)))) {
 
     // there's a hostname.
     // the first instance of /, ?, ;, or # ends the host.
@@ -402,7 +415,7 @@ Url.prototype.parse = function parse(url, parseQueryString, slashesDenoteHost) {
 
   // Now rest is set to the post-host stuff.
   // Chop off any delim chars.
-  if (!unsafeProtocol.has(lowerProto)) {
+  if (lowerProto && !unsafeProtocol.has(lowerProto)) {
     // First, make 100% sure that any "autoEscape" chars get
     // escaped, even if encodeURIComponent doesn't think they
     // need to be.
@@ -448,8 +461,8 @@ Url.prototype.parse = function parse(url, parseQueryString, slashesDenoteHost) {
   } else if (firstIdx > 0) {
     this.pathname = rest.slice(0, firstIdx);
   }
-  if (slashedProtocol.has(lowerProto) &&
-      this.hostname && !this.pathname) {
+  if (lowerProto && slashedProtocol.has(lowerProto) &&
+    this.hostname && !this.pathname) {
     this.pathname = '/';
   }
 
@@ -465,17 +478,17 @@ Url.prototype.parse = function parse(url, parseQueryString, slashesDenoteHost) {
   return this;
 };
 
-function getHostname(self, rest, hostname) {
+function getHostname(self: any, rest: any, hostname: string) {
   for (let i = 0; i < hostname.length; ++i) {
     const code = hostname.charCodeAt(i);
     const isValid = (code >= CHAR_LOWERCASE_A && code <= CHAR_LOWERCASE_Z) ||
-                    code === CHAR_DOT ||
-                    (code >= CHAR_UPPERCASE_A && code <= CHAR_UPPERCASE_Z) ||
-                    (code >= CHAR_0 && code <= CHAR_9) ||
-                    code === CHAR_HYPHEN_MINUS ||
-                    code === CHAR_PLUS ||
-                    code === CHAR_UNDERSCORE ||
-                    code > 127;
+      code === CHAR_DOT ||
+      (code >= CHAR_UPPERCASE_A && code <= CHAR_UPPERCASE_Z) ||
+      (code >= CHAR_0 && code <= CHAR_9) ||
+      code === CHAR_HYPHEN_MINUS ||
+      code === CHAR_PLUS ||
+      code === CHAR_UNDERSCORE ||
+      code > 127;
 
     // Invalid host character
     if (!isValid) {
@@ -507,7 +520,7 @@ const escapedCodes = [
 // Automatically escape all delimiters and unwise characters from RFC 2396.
 // Also escape single quotes in case of an XSS attack.
 // Return the escaped string.
-function autoEscapeStr(rest) {
+function autoEscapeStr(rest: string) {
   let escaped = '';
   let lastEscapedPos = 0;
   for (let i = 0; i < rest.length; ++i) {
@@ -532,7 +545,8 @@ function autoEscapeStr(rest) {
 }
 
 // Format a parsed object into a url string
-function urlFormat(urlObject, options) {
+
+function urlFormat(urlObject: any/*, options*/) {
   // Ensure it's an object, and not a string url.
   // If it's an object, this is a no-op.
   // this way, you can call urlParse() on strings
@@ -561,13 +575,14 @@ const noEscapeAuth = new Int8Array([
   0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x40 - 0x4F
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, // 0x50 - 0x5F
   0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x60 - 0x6F
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0,  // 0x70 - 0x7F
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, // 0x70 - 0x7F
 ]);
 
 Url.prototype.format = function format() {
   let auth = this.auth || '';
   if (auth) {
     //TODO: function encodeStr and var hexTable Does not exist
+    // @ts-ignore  
     auth = encodeStr(auth, noEscapeAuth, hexTable);
     auth += '@';
   }
@@ -633,10 +648,10 @@ Url.prototype.format = function format() {
         pathname = '/' + pathname;
       host = '//' + host;
     } else if (protocol.length >= 4 &&
-               protocol.charCodeAt(0) === 102/* f */ &&
-               protocol.charCodeAt(1) === 105/* i */ &&
-               protocol.charCodeAt(2) === 108/* l */ &&
-               protocol.charCodeAt(3) === 101/* e */) {
+      protocol.charCodeAt(0) === 102/* f */ &&
+      protocol.charCodeAt(1) === 105/* i */ &&
+      protocol.charCodeAt(2) === 108/* l */ &&
+      protocol.charCodeAt(3) === 101/* e */) {
       host = '//';
     }
   }
@@ -651,26 +666,27 @@ Url.prototype.format = function format() {
   return protocol + host + pathname + search + hash;
 };
 
-function urlResolve(source, relative) {
+function urlResolve(source: string, relative: any) {
   return urlParse(source, false, true).resolve(relative);
 }
 
-Url.prototype.resolve = function resolve(relative) {
+Url.prototype.resolve = function resolve(relative: any) {
   return this.resolveObject(urlParse(relative, false, true)).format();
 };
 
-function urlResolveObject(source, relative) {
+function urlResolveObject(source: string, relative: any) {
   if (!source) return relative;
   return urlParse(source, false, true).resolveObject(relative);
 }
 
-Url.prototype.resolveObject = function resolveObject(relative) {
+Url.prototype.resolveObject = function resolveObject(relative: any) {
   if (typeof relative === 'string') {
+    // @ts-ignore
     const rel = new Url();
     rel.parse(relative, false, true);
     relative = rel;
   }
-
+  // @ts-ignore
   const result = new Url();
   const tkeys = Object.keys(this);
   for (let tk = 0; tk < tkeys.length; tk++) {
@@ -700,7 +716,7 @@ Url.prototype.resolveObject = function resolveObject(relative) {
 
     // urlParse appends trailing / to urls like http://www.example.com
     if (slashedProtocol.has(result.protocol) &&
-        result.hostname && !result.pathname) {
+      result.hostname && !result.pathname) {
       result.path = result.pathname = '/';
     }
 
@@ -729,8 +745,8 @@ Url.prototype.resolveObject = function resolveObject(relative) {
 
     result.protocol = relative.protocol;
     if (!relative.host &&
-        !/^file:?$/.test(relative.protocol) &&
-        !hostlessProtocol.has(relative.protocol)) {
+      !/^file:?$/.test(relative.protocol) &&
+      !hostlessProtocol.has(relative.protocol)) {
       const relPath = (relative.pathname || '').split('/');
       while (relPath.length && !(relative.host = relPath.shift()));
       if (!relative.host) relative.host = '';
@@ -763,12 +779,12 @@ Url.prototype.resolveObject = function resolveObject(relative) {
     relative.host || (relative.pathname && relative.pathname.charAt(0) === '/')
   );
   let mustEndAbs = (isRelAbs || isSourceAbs ||
-                    (result.host && relative.pathname));
+    (result.host && relative.pathname));
   const removeAllDots = mustEndAbs;
   let srcPath = (result.pathname && result.pathname.split('/')) || [];
   const relPath = (relative.pathname && relative.pathname.split('/')) || [];
   const noLeadingSlashes = result.protocol &&
-      !slashedProtocol.has(result.protocol);
+    !slashedProtocol.has(result.protocol);
 
   // If the url is a non-slashed url, then relative
   // links like ../.. should be able
@@ -840,7 +856,7 @@ Url.prototype.resolveObject = function resolveObject(relative) {
     // To support http.request
     if (result.pathname !== null || result.search !== null) {
       result.path = (result.pathname ? result.pathname : '') +
-                    (result.search ? result.search : '');
+        (result.search ? result.search : '');
     }
     result.href = result.format();
     return result;
@@ -865,7 +881,7 @@ Url.prototype.resolveObject = function resolveObject(relative) {
   let last = srcPath.slice(-1)[0];
   const hasTrailingSlash = (
     ((result.host || relative.host || srcPath.length > 1) &&
-    (last === '.' || last === '..')) || last === '');
+      (last === '.' || last === '..')) || last === '');
 
   // Strip single dots, resolve double dots to parent dir
   // if the path tries to go above the root, `up` ends up > 0
@@ -891,7 +907,7 @@ Url.prototype.resolveObject = function resolveObject(relative) {
   }
 
   if (mustEndAbs && srcPath[0] !== '' &&
-      (!srcPath[0] || srcPath[0].charAt(0) !== '/')) {
+    (!srcPath[0] || srcPath[0].charAt(0) !== '/')) {
     srcPath.unshift('');
   }
 
@@ -900,7 +916,7 @@ Url.prototype.resolveObject = function resolveObject(relative) {
   }
 
   const isAbsolute = srcPath[0] === '' ||
-      (srcPath[0] && srcPath[0].charAt(0) === '/');
+    (srcPath[0] && srcPath[0].charAt(0) === '/');
 
   // put the host back
   if (noLeadingSlashes) {
@@ -933,7 +949,7 @@ Url.prototype.resolveObject = function resolveObject(relative) {
   // To support request.http
   if (result.pathname !== null || result.search !== null) {
     result.path = (result.pathname ? result.pathname : '') +
-                  (result.search ? result.search : '');
+      (result.search ? result.search : '');
   }
   result.auth = relative.auth || result.auth;
   result.slashes = result.slashes || relative.slashes;
@@ -943,7 +959,7 @@ Url.prototype.resolveObject = function resolveObject(relative) {
 
 Url.prototype.parseHost = function parseHost() {
   let host = this.host;
-  let port = portPattern.exec(host);
+  let port = portPattern.exec(host)?.toString();
   if (port) {
     port = port[0];
     if (port !== ':') {
@@ -956,7 +972,7 @@ Url.prototype.parseHost = function parseHost() {
 
 // As of V8 6.6, depending on the size of the array, this is anywhere
 // between 1.5-10x faster than the two-arg version of Array#splice()
-function spliceOne(list, index) {
+function spliceOne(list: any, index: number) {
   for (; index + 1 < list.length; index++)
     list[index] = list[index + 1];
   list.pop();
@@ -964,7 +980,9 @@ function spliceOne(list, index) {
 
 // Class representing URL search parameters
 class URLSearchParams {
-  constructor(queryString) {
+  public params: any;
+
+  constructor(queryString: string) {
     // If queryString is null or undefined, set it to an empty string
     if (queryString === null || queryString === undefined) {
       queryString = '';
@@ -974,7 +992,7 @@ class URLSearchParams {
   }
 
   // Static method to parse the query string
-  static parse(queryString) {
+  static parse(queryString: string) {
     // Use Map instead of URLSearchParams
     const params = new Map();
     if (queryString) {
@@ -990,10 +1008,7 @@ class URLSearchParams {
           const decodedValue = decodeURIComponent(value || '');
           // Check if the parameter already exists in the params Map
           if (!params.has(decodedKey)) {
-            // If not, append it
-            params.append(decodedKey, decodedValue);
-          } else {
-            // If yes, set its value
+            // Add or update valuet
             params.set(decodedKey, decodedValue);
           }
         });
@@ -1002,27 +1017,27 @@ class URLSearchParams {
   }
 
   // Method to check if a parameter exists
-  has(key) {
+  has(key: string) {
     return this.params.has(key);
   }
 
   // Method to get the value of a parameter
-  get(key) {
+  get(key: string) {
     return this.params.get(key);
   }
 
   // Method to set the value of a parameter
-  set(key, value) {
+  set(key: string, value: string) {
     this.params.set(key, value);
   }
 
   // Method to append a new value to a parameter
-  append(key, value) {
+  append(key: string, value: string) {
     this.params.append(key, value);
   }
 
   // Method to delete a parameter
-  delete(key) {
+  delete(key: string) {
     this.params.delete(key);
   }
 
@@ -1030,7 +1045,7 @@ class URLSearchParams {
   toString() {
     let queryString = '';
     // Iterate over the params Map and construct the query string
-    this.params.forEach((value, key) => {
+    this.params.forEach((value: string, key: string) => {
       if (queryString !== '') {
         queryString += '&';
       }
@@ -1042,7 +1057,21 @@ class URLSearchParams {
 
 // Class representing a URL
 class URL {
-  constructor(urlString, base) {
+  public _protocol: any;
+  public _slashes: any;
+  public _auth: any;
+  public _hostname: any;
+  public _port: any;
+  public _host: any;
+  public _pathname: any;
+  public _search: any;
+  public _query: any;
+  public _hash: any;
+  public _path: any;
+  public _href: any;
+  public _searchParams: any;
+
+  constructor(urlString: string | { toString: () => string }, base?: string | URL | undefined) {
     // Ensure urlString is a valid URL string or URL object
     if (typeof urlString !== 'string') {
       // If urlString is an instance of URL class, convert it to string
@@ -1158,6 +1187,7 @@ class URL {
   }
 }
 
+// Exporting functions and class
 export default {
   URLSearchParams,
   URL,
@@ -1167,6 +1197,7 @@ export default {
   resolveObject: urlResolveObject,
   format: urlFormat,
 };
+
 export {
   URLSearchParams,
   URL,
