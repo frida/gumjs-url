@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -19,8 +18,8 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
+// @ts-ignore
 import { toASCII } from '@frida/punycode';
-//TODO import { querystring } from '@frida/querystring'; Does not exist
 import { stringify as stringifyQuery, parse as parseQuery } from '@frida/querystring';
 function Url() {
     this.protocol = null;
@@ -76,6 +75,7 @@ const CHAR_SPACE = 32, CHAR_TAB = 9, CHAR_CARRIAGE_RETURN = 13, CHAR_LINE_FEED =
 function urlParse(url, parseQueryString, slashesDenoteHost) {
     if (url instanceof Url)
         return url;
+    // @ts-ignore
     const urlObject = new Url();
     urlObject.parse(url, parseQueryString, slashesDenoteHost);
     return urlObject;
@@ -500,7 +500,8 @@ const noEscapeAuth = new Int8Array([
 Url.prototype.format = function format() {
     let auth = this.auth || '';
     if (auth) {
-        //TODO: function encodeStr and var hexTable Does not exist  
+        //TODO: function encodeStr and var hexTable Does not exist
+        // @ts-ignore  
         auth = encodeStr(auth, noEscapeAuth, hexTable);
         auth += '@';
     }
@@ -586,10 +587,12 @@ function urlResolveObject(source, relative) {
 }
 Url.prototype.resolveObject = function resolveObject(relative) {
     if (typeof relative === 'string') {
+        // @ts-ignore
         const rel = new Url();
         rel.parse(relative, false, true);
         relative = rel;
     }
+    // @ts-ignore
     const result = new Url();
     const tkeys = Object.keys(this);
     for (let tk = 0; tk < tkeys.length; tk++) {
@@ -1041,6 +1044,7 @@ class URL {
         return this._searchParams;
     }
 }
+// Exporting functions and class
 export default {
     URLSearchParams,
     URL,

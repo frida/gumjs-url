@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -20,11 +19,25 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// @ts-ignore
 import { toASCII } from '@frida/punycode';
-//TODO import { querystring } from '@frida/querystring'; Does not exist
 import { stringify as stringifyQuery, parse as parseQuery } from '@frida/querystring';
 
-function Url() {
+function Url(
+  this: {
+    protocol: any;
+    slashes: any;
+    auth: any;
+    host: any;
+    port: any;
+    hostname: any;
+    hash: any;
+    search: any;
+    query: any;
+    pathname: any;
+    path: any;
+    href: any;
+  }) {
   this.protocol = null;
   this.slashes = null;
   this.auth = null;
@@ -117,6 +130,7 @@ const
 
 function urlParse(url: any, parseQueryString?: boolean, slashesDenoteHost?: boolean) {
   if (url instanceof Url) return url;
+  // @ts-ignore
   const urlObject = new Url();
   urlObject.parse(url, parseQueryString, slashesDenoteHost);
   return urlObject;
@@ -561,13 +575,14 @@ const noEscapeAuth = new Int8Array([
   0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x40 - 0x4F
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, // 0x50 - 0x5F
   0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x60 - 0x6F
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0,  // 0x70 - 0x7F
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, // 0x70 - 0x7F
 ]);
 
 Url.prototype.format = function format() {
   let auth = this.auth || '';
   if (auth) {
-    //TODO: function encodeStr and var hexTable Does not exist  
+    //TODO: function encodeStr and var hexTable Does not exist
+    // @ts-ignore  
     auth = encodeStr(auth, noEscapeAuth, hexTable);
     auth += '@';
   }
@@ -666,10 +681,12 @@ function urlResolveObject(source: string, relative: any) {
 
 Url.prototype.resolveObject = function resolveObject(relative: any) {
   if (typeof relative === 'string') {
+    // @ts-ignore
     const rel = new Url();
     rel.parse(relative, false, true);
     relative = rel;
   }
+  // @ts-ignore
   const result = new Url();
   const tkeys = Object.keys(this);
   for (let tk = 0; tk < tkeys.length; tk++) {
@@ -1170,6 +1187,7 @@ class URL {
   }
 }
 
+// Exporting functions and class
 export default {
   URLSearchParams,
   URL,
@@ -1189,4 +1207,3 @@ export {
   urlResolveObject as resolveObject,
   urlFormat as format,
 };
-

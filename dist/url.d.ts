@@ -1,4 +1,17 @@
-declare function Url(): void;
+declare function Url(this: {
+    protocol: any;
+    slashes: any;
+    auth: any;
+    host: any;
+    port: any;
+    hostname: any;
+    hash: any;
+    search: any;
+    query: any;
+    pathname: any;
+    path: any;
+    href: any;
+}): void;
 declare function urlParse(url: any, parseQueryString?: boolean, slashesDenoteHost?: boolean): any;
 declare function urlFormat(urlObject: any): any;
 declare function urlResolve(source: string, relative: any): any;
