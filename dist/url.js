@@ -959,18 +959,18 @@ class URL {
         // Parse the URL string into its components
         const urlObject = urlParse(urlString, true, true);
         // Assign each component to instance variables
-        this._protocol = urlObject.protocol;
-        this._slashes = urlObject.slashes;
-        this._auth = urlObject.auth;
-        this._hostname = urlObject.hostname;
-        this._port = urlObject.port;
-        this._host = urlObject.host;
-        this._pathname = urlObject.pathname;
-        this._search = urlObject.search;
-        this._query = urlObject.query;
-        this._hash = urlObject.hash;
-        this._path = urlObject.path;
-        this._href = urlObject.href;
+        this._protocol = urlObject.protocol || '';
+        this._slashes = urlObject.slashes || '';
+        this._auth = urlObject.auth || '';
+        this._hostname = urlObject.hostname || '';
+        this._port = urlObject.port || '';
+        this._host = urlObject.host || '';
+        this._pathname = urlObject.pathname || '';
+        this._search = urlObject.search || '';
+        this._query = urlObject.query || '';
+        this._hash = urlObject.hash || '';
+        this._path = urlObject.path || '';
+        this._href = urlObject.href || '';
         // Create URLSearchParams object from query object
         this._searchParams = new URLSearchParams(stringifyQuery(this._query));
         // If a base URL is provided, override the host component with the host of the base URL
